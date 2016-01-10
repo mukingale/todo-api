@@ -33,6 +33,22 @@ app.get('/todos/:id',function(req, res){
 	}
 })
 
+// DELETE /todos/:id
+
+app.delete('/todos/:id',function(req, res){
+	var todoId = parseInt(req.params.id, 10);
+	var machedTodo = _.findWhere(todos, {id: todoId});
+	todos = _.without(todos, _.findWhere(todos, {id: todoId}));
+	if (machedTodo )
+	{
+		res.status(200).send();
+	}
+	else
+	{
+		res.status(404).send();
+	}
+})
+
 // POST /todos?
 
 app.post('/todos', function(req,res){

@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.get('/todos',function(req, res){
 
 	res.json(todos);
-})
+});
 
 // GET todos/:id
 app.get('/todos/:id',function(req, res){
@@ -31,7 +31,7 @@ app.get('/todos/:id',function(req, res){
 	{
 		res.status(404).send();
 	}
-})
+});
 
 // DELETE /todos/:id
 
@@ -41,15 +41,72 @@ app.delete('/todos/:id',function(req, res){
 	todos = _.without(todos, _.findWhere(todos, {id: todoId}));
 	if (machedTodo )
 	{
-		res.status(200).send();
+		res.json(machedTodo);
 	}
 	else
 	{
 		res.status(404).send();
 	}
-})
+});
 
-// POST /todos?
+// PUT
+
+// app.put('/todos/:id',function(req, res){
+
+// 	var todoId = parseInt(req.params.id, 10);
+// 	var body = _.pick(req.body,'description','completed');
+
+// 	var description = body.description.trim();
+// 	var completed = body.completed.trim();
+
+// 	var machedTodo = _.findWhere(todos, {id: todoId});
+// 	if (machedTodo )
+// 	{	
+// 		machedTodo.description = description;
+// 		machedTodo.completed = completed;
+
+// 		res.json(machedTodo);
+// 	}
+// 	else
+// 	{
+// 		res.status(404).send();
+// 	}
+// });
+
+
+app.put('/todos/:id',function(req, res){
+
+	var todoId = parseInt(req.params.id, 10);
+	var validAttributes = {};
+	var body = _.pick(req.body,'description','completed');
+	var machedTodo = _.findWhere(todos, {id: todoId});
+
+	if (!machedTodo)
+	{
+		res.status(404).send();
+	}
+
+	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
+		validAttributes.completed = body.completed;	
+	} else if (body.hasOwnProperty('completed')) {
+		res.status(400).send();
+
+	} 
+
+	if (body.hasOwnProperty('desciption') && _.isString(body.completed) && body.description.trim().length > 0){
+		validAttributes.description = body.description;	
+	} else if (body.hasOwnProperty('desciption')) {
+		res.status(400).send();
+	} 
+
+	_.extend(machedTodo,validAttributes);
+
+	res.json(machedTodo);
+
+
+});
+
+// POST /todos
 
 app.post('/todos', function(req,res){
 	var body = _.pick(req.body,'description','completed');

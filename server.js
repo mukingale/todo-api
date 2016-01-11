@@ -33,14 +33,16 @@ app.get('/todos', function(req, res) {
 
 	if (query.hasOwnProperty('q') && _.isString(query.q) && query.q.length > 0) {
 		where.description = {
-			$like : '%' + query.q + '%'
+			$like: '%' + query.q + '%'
 		};
 	}
 
-	db.todo.findAll({where:where}).then(function (todos){
+	db.todo.findAll({
+		where: where
+	}).then(function(todos) {
 		res.json(todos);
 
-	}, function (error){
+	}, function(error) {
 		res.status(404).send();
 	});
 
@@ -49,13 +51,13 @@ app.get('/todos', function(req, res) {
 // GET todos/:id
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	db.todo.findById(todoId).then(function(todo){
-		if (!todo){
+	db.todo.findById(todoId).then(function(todo) {
+		if (!todo) {
 			res.status(404).send();
-		}else{
+		} else {
 			res.json(todo.toJSON());
 		}
-	}, function (error){
+	}, function(error) {
 		res.status(500).send();
 	});
 
@@ -67,21 +69,19 @@ app.delete('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
 	db.todo.destroy({
-  	 	where: {
-      		id: todoId 
-   		}
-	}).then( function (rowsDeleted) { // rowDeleted will return number of rows deleted
-  			if(rowsDeleted !== 0){
-     			res.status(204).send()
-   			}
-   			else
-   			{
-   				res.status(404).json({
-   					error: 'No to do with id'
-   				});
-   			}
-	}, function(err){
-    		res.status(500).send();
+		where: {
+			id: todoId
+		}
+	}).then(function(rowsDeleted) { // rowDeleted will return number of rows deleted
+		if (rowsDeleted !== 0) {
+			res.status(204).send()
+		} else {
+			res.status(404).json({
+				error: 'No to do with id'
+			});
+		}
+	}, function(err) {
+		res.status(500).send();
 	});
 
 });
@@ -95,25 +95,25 @@ app.put('/todos/:id', function(req, res) {
 
 	if (body.hasOwnProperty('completed')) {
 		attributes.completed = body.completed;
-	} 
+	}
 
-	if (body.hasOwnProperty('description') ) {
+	if (body.hasOwnProperty('description')) {
 		attributes.description = body.description;
-	} 
+	}
 	// Instance method is executed on the existing model
-	db.todo.findById(todoId).then (function (todo){
-		if (todo){
-			return todo.update(attributes);
-		}else {
+	db.todo.findById(todoId).then(function(todo) {
+		if (todo) {
+			todo.update(attributes).then(function(todo) {
+				res.json(todo.toJSON());
+			}, function(err) {
+				res.status(400).json(e);
+			});
+		} else {
 			res.status(404).send();
 		}
-	}, function (error){
+	}, function(error) {
 		res.status(500).send();
-	}).then(function(todo) {
-		res.json(todo.toJSON());
-	}, function (err){
-		res.status(400).json(e);
-	} );
+	});
 
 
 
@@ -125,13 +125,13 @@ app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
 	db.todo.create({
-		description : body.description,
-		completed : body.completed
-	}).then(function (todo){
+		description: body.description,
+		completed: body.completed
+	}).then(function(todo) {
 		res.json(todo.toJSON());
-	}, function(error){
+	}, function(error) {
 		res.status(400).json(error);
-	}).catch(function (e){
+	}).catch(function(e) {
 		console.log(e);
 	});
 

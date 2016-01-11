@@ -19,32 +19,40 @@ app.use(bodyParser.json());
 // GET /todos?completed=true?q=house
 app.get('/todos', function(req, res) {
 
-	var queryParams = req.query;
-	var filteredTodos = todos;
+	var query = req.query;
+	var where = {};
+	// var filteredTodos = todos;
 
 
-	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(todos, {
-			completed: true
-		});
+	if (query.hasOwnProperty('completed') && query.completed === 'true') {
+		where.completed = true;
 
-	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(todos, {
-			completed: false
-		});
-
+	} else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+		where.completed = false;
 	}
 
-	if (queryParams.hasOwnProperty('q') && _.isString(queryParams.q) && queryParams.q.length > 0) {
-		// Search using regular expression
-		filteredTodos = _.filter(filteredTodos, function(obj) {
-			//return obj['description'].match(queryParams.q);
-			return obj.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-		});
-
+	if (query.hasOwnProperty('q') && _.isString(query.q) && query.q.length > 0) {
+		where.description = {
+			$like : '%' + query.q + '%'
+		};
 	}
 
-	res.json(filteredTodos);
+	db.todo.findAll({where:where}).then(function (todos){
+		res.json(todos);
+
+	}, function (error){
+		res.status(404).send();
+	});
+	// if (queryParams.hasOwnProperty('q') && _.isString(queryParams.q) && queryParams.q.length > 0) {
+	// 	// Search using regular expression
+	// 	filteredTodos = _.filter(filteredTodos, function(obj) {
+	// 		//return obj['description'].match(queryParams.q);
+	// 		return obj.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+	// 	});
+
+	// }
+
+	// res.json(filteredTodos);
 });
 
 // GET todos/:id
@@ -78,30 +86,6 @@ app.delete('/todos/:id', function(req, res) {
 		res.status(404).send();
 	}
 });
-
-// PUT
-
-// app.put('/todos/:id',function(req, res){
-
-// 	var todoId = parseInt(req.params.id, 10);
-// 	var body = _.pick(req.body,'description','completed');
-
-// 	var description = body.description.trim();
-// 	var completed = body.completed.trim();
-
-// 	var machedTodo = _.findWhere(todos, {id: todoId});
-// 	if (machedTodo )
-// 	{	
-// 		machedTodo.description = description;
-// 		machedTodo.completed = completed;
-
-// 		res.json(machedTodo);
-// 	}
-// 	else
-// 	{
-// 		res.status(404).send();
-// 	}
-// });
 
 
 app.put('/todos/:id', function(req, res) {

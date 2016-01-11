@@ -43,16 +43,7 @@ app.get('/todos', function(req, res) {
 	}, function (error){
 		res.status(404).send();
 	});
-	// if (queryParams.hasOwnProperty('q') && _.isString(queryParams.q) && queryParams.q.length > 0) {
-	// 	// Search using regular expression
-	// 	filteredTodos = _.filter(filteredTodos, function(obj) {
-	// 		//return obj['description'].match(queryParams.q);
-	// 		return obj.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-	// 	});
 
-	// }
-
-	// res.json(filteredTodos);
 });
 
 // GET todos/:id

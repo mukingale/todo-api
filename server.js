@@ -90,32 +90,31 @@ app.delete('/todos/:id', function(req, res) {
 app.put('/todos/:id', function(req, res) {
 
 	var todoId = parseInt(req.params.id, 10);
-	var validAttributes = {};
+	var attributes = {};
 	var body = _.pick(req.body, 'description', 'completed');
-	var machedTodo = _.findWhere(todos, {
-		id: todoId
-	});
 
-	if (!machedTodo) {
-		res.status(404).send();
-	}
+	if (body.hasOwnProperty('completed')) {
+		attributes.completed = body.completed;
+	} 
 
-	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
-	} else if (body.hasOwnProperty('completed')) {
-		res.status(400).send();
+	if (body.hasOwnProperty('description') ) {
+		attributes.description = body.description;
+	} 
+	// Instance method is executed on the existing model
+	db.todo.findById(todoId).then (function (todo){
+		if (todo){
+			return todo.update(attributes);
+		}else {
+			res.status(404).send();
+		}
+	}, function (error){
+		res.status(500).send();
+	}).then(function(todo) {
+		res.json(todo.toJSON());
+	}, function (err){
+		res.status(400).json(e);
+	} );
 
-	}
-
-	if (body.hasOwnProperty('description') && _.isString(body.completed) && body.description.trim().length > 0) {
-		validAttributes.description = body.description;
-	} else if (body.hasOwnProperty('desciption')) {
-		res.status(400).send();
-	}
-
-	_.extend(machedTodo, validAttributes);
-
-	res.json(machedTodo);
 
 
 });

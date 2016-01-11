@@ -12,16 +12,32 @@ app.get('/',function(req, res){
 
 
 app.use(bodyParser.json());
-// GET todos
+
+
+// GET /todos?completed=true?q=house
 app.get('/todos',function(req, res){
 
 	var queryParams = req.query;
 	var filteredTodos = todos;
+
+	
 	if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
 		filteredTodos = _.where(todos, {completed:true});
+
 	}else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
 		filteredTodos = _.where(todos, {completed:false});
+
 	} 
+
+	if (queryParams.hasOwnProperty('q') && _.isString(queryParams.q) && queryParams.q.length > 0)
+	{
+		// Search using regular expression
+		filteredTodos =  _.filter(filteredTodos, function (obj){ 
+    						//return obj['description'].match(queryParams.q);
+    						return obj.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+    					});
+				
+	}
 
 	res.json(filteredTodos);
 });
@@ -131,5 +147,5 @@ app.post('/todos', function(req,res){
 
 });
 app.listen(PORT, function(){
-	console.log('Express litening on port ' + PORT + '!');
+	console.log('Express listening on port ' + PORT + '!');
 });

@@ -21,9 +21,9 @@ app.use(bodyParser.json());
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
 
 	var query = req.query;
-	var where = {};
-	// var filteredTodos = todos;
-
+	var where = {
+		userId : req.user.get('id')
+	};
 
 	if (query.hasOwnProperty('completed') && query.completed === 'true') {
 		where.completed = true;
@@ -52,7 +52,12 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 // GET todos/:id
 app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	db.todo.findById(todoId).then(function(todo) {
+	var where = {
+		id: todoId,
+		userId : req.user.get('id')
+	};
+
+	db.todo.findOne(where).then(function(todo) {
 		if (!todo) {
 			res.status(404).send();
 		} else {
@@ -71,7 +76,8 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 
 	db.todo.destroy({
 		where: {
-			id: todoId
+			id: todoId,
+			userId: req.user.get('id')
 		}
 	}).then(function(rowsDeleted) { // rowDeleted will return number of rows deleted
 		if (rowsDeleted !== 0) {
@@ -93,7 +99,10 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 	var attributes = {};
 	var body = _.pick(req.body, 'description', 'completed');
-
+	var where = {
+		id: todoId,
+		userId : req.user.get('id')
+	};
 	if (body.hasOwnProperty('completed')) {
 		attributes.completed = body.completed;
 	}
@@ -102,7 +111,7 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 		attributes.description = body.description;
 	}
 	// Instance method is executed on the existing model
-	db.todo.findById(todoId).then(function(todo) {
+	db.todo.findOne(where).then(function(todo) {
 		if (todo) {
 			todo.update(attributes).then(function(todo) {
 				res.json(todo.toJSON());
@@ -179,7 +188,7 @@ app.post('/users/login', function(req, res) {
 
 
 db.sequelize.sync({
-	force: true
+	//force: true
 }).then(function() {
 	app.listen(PORT, function() {
 		console.log('Express listening on port ' + PORT + '!');

@@ -17,22 +17,64 @@ var Todo = sequelize.define('todo', {
 		type : Sequelize.BOOLEAN,
 		allowNull: false,
 		defaultValue: false
+	},
+	ip: {
+		type : Sequelize.STRING,
+		defaultValue: ''
 	}
 });
 
+var User = sequelize.define('user', {
+	email : {
+		type: Sequelize.STRING
+	}
+});
+
+Todo.belongsTo(User);
+User.hasMany(Todo);
+
 sequelize.sync({
-	//force:true
+//	force:true
 }).then(function () {
 	console.log('Eveything is synced');
-	Todo.findAll( {
-		where : {
-			id : 4
-		}
-	}).then(function(todos) {
-		todos.forEach(function (todo){
-			console.log(todo.toJSON());
+	
+	User.findById(1).then(function (user){
+		user.getTodos({
+			where: {
+				completed : false
+			}
+		}).then (function (todos){
+			todos.forEach(function (todo){
+				console.log(todo.toJSON());
+			});
 		});
 	});
+	// User.create({
+	// 	email: "mukund@example.com"
+	// }).then(function (user){
+	// 	return Todo.create({
+	// 		description: 'clean',
+	// 		ip: '10.0.0.0',
+	// 		completed:false
+	// 	});
+	// }, function(error){
+	// 	console.log(error);
+	// }).then(function(todo){
+	// 	User.findById(1).then(function (user){
+	// 		user.addTodo(todo);
+	// 	});
+	// });
+	// Todo.findAll( {
+	// 	where : {
+	// 		id : 4
+	// 	}
+	// }).then(function(todos) {
+	// 	todos.forEach(function (todo){
+	// 		console.log(todo.toJSON());
+	// 	});
+	// });
+
+
 	// Todo.create({
 	// 	description : "Take out trash"
 	// }).then(function(todo){

@@ -125,11 +125,15 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 app.post('/todos', middleware.requireAuthentication, function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
-	db.todo.create({
-		description: body.description,
-		completed: body.completed
-	}).then(function(todo) {
-		res.json(todo.toJSON());
+	db.todo.create(body).then(function(todo) {
+		//res.json(todo.toJSON());
+		
+		req.user.addTodo(todo).then(function () {
+			return todo.reload();
+		}).then(function (todo) {
+			res.json(todo.toJSON());
+		});
+		
 	}, function(error) {
 		res.status(400).json(error);
 	}).catch(function(e) {
@@ -165,7 +169,7 @@ app.post('/users/login', function(req, res) {
 			res.status(401).send();
 		}
 
-	}, function (error){
+	}, function(error) {
 		res.status(401).send();
 	});
 
@@ -174,7 +178,9 @@ app.post('/users/login', function(req, res) {
 
 
 
-db.sequelize.sync({force:true}).then(function() {
+db.sequelize.sync({
+	force: true
+}).then(function() {
 	app.listen(PORT, function() {
 		console.log('Express listening on port ' + PORT + '!');
 	});

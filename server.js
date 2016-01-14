@@ -93,12 +93,12 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 
 });
 
-
+// Update 
 app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 
 	var todoId = parseInt(req.params.id, 10);
 	var attributes = {};
-	var body = _.pick(req.body, 'description', 'completed');
+	var body = _.pick(req.body, 'description', 'completed','ip');
 	var where = {
 		id: todoId,
 		userId : req.user.get('id')
@@ -110,6 +110,10 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	if (body.hasOwnProperty('description')) {
 		attributes.description = body.description;
 	}
+
+	if (body.hasOwnProperty('ip')) {
+		attributes.ip = body.ip;
+	}	
 	// Instance method is executed on the existing model
 	db.todo.findOne(where).then(function(todo) {
 		if (todo) {
@@ -132,7 +136,7 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 // POST /todos
 
 app.post('/todos', middleware.requireAuthentication, function(req, res) {
-	var body = _.pick(req.body, 'description', 'completed');
+	var body = _.pick(req.body, 'description', 'completed','ip');
 
 	db.todo.create(body).then(function(todo) {
 		//res.json(todo.toJSON());
@@ -198,7 +202,7 @@ app.delete('/users/login', middleware.requireAuthentication, function (req,res){
 });
 
 db.sequelize.sync({
-	force: true
+	//force: true
 }).then(function() {
 	app.listen(PORT, function() {
 		console.log('Express listening on port ' + PORT + '!');
